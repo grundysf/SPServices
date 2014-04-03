@@ -1,0 +1,142 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"
+   "http://www.w3.org/TR/html4/strict.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+
+<!-- Reference jQuery on the Google CDN -->
+<script type="text/javascript" src="/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+<!-- Reference SPServices on cdnjs (Cloudflare) -->
+<script type="text/javascript" src="/ajax/libs/jquery.SPServices/0.7.2/jquery.SPServices-0.7.2.min.js"></script>
+
+<SCRIPT type=text/javascript>
+
+$(document).ready(function() {
+	waitMessage = "<img style='display:block; margin-left:auto; margin-right:auto;' src='/_layouts/images/gears_an.gif'/>";
+	$("form").submit(function(e) {e.preventDefault()});
+	$('#inputURL').change(function() {
+		//obtain the site's URL inputURL value
+		$().SPServices({
+			operation: "WebUrlFromPageUrl",
+			async: false,
+			pageURL: $("#inputURL").val(),
+			completefunc: function (xData, Status) {$('#siteURL').html($(xData.responseXML).find("WebUrlFromPageUrlResult").text())}
+		})
+		getSiteLists($('#siteURL').text());
+	});
+	$('#ListSlct').change(function(){
+		$("#colSlct").html(waitMessage);
+		$().SPServices({
+			operation: "GetList",
+			webURL: $('#siteURL').text(),
+			listName: this.value,
+			async: false,
+			completefunc: function (xData, Status){
+				var outputHTML = "<table><tr>";
+				$(xData.responseXML).find("Fields>Field").each(function(index) {
+					if ((index%4)==0) {outputHTML += "</tr><tr>"};
+					outputHTML +="<td><input type=\"checkbox\" name=\"column\" value="+ $(this).attr("Name") +" />"+ $(this).attr("DisplayName") +"</td>";
+				});
+				outputHTML += "</tr></table>";
+				$("#colSlct").html(outputHTML);
+			}
+		})
+	});
+	$('#getSatisfaction').click(function(){
+		var qryCAML = "<ViewFields>";
+		var tableResult = "<tr>";
+		$('input:checkbox:checked').each(function(){
+			qryCAML += "<FieldRef Name=\\\""+ this.value+"\\\" />";
+			tableResult += "<td>\"+$(this).attr(\"ows_"+ this.value+"\")+\"</td>";
+		})
+		qryCAML += "</ViewFields>";
+		tableResult += "</tr>";
+		var resultCode = "";
+		resultCode += "$().SPServices({";
+		resultCode += "\n\toperation: \"GetListItems\",";
+		resultCode += "\n\tasync: false,";
+		resultCode += "\n\tlistName: \""+$('#ListSlct').val()+"\",";
+		resultCode += "\n\twebURL: \""+$('#siteURL').text()+"\",";
+		resultCode += "\n\tCAMLViewFields: \""+qryCAML +"\",";
+		resultCode += "\n\tcompletefunc: function (xData, Status) {";
+		resultCode += "\n\t\tvar htmlTable = \"<table>\";";
+		resultCode += "\n\t\t$(xData.responseXML).find(\"[nodeName='z:row']\").each(function() {";
+		resultCode += "\n\t\t\thtmlTable += \""+tableResult +"\";";
+		resultCode += "\n\t\t})";
+		resultCode += "\n\thtmlTable += \"</table>\";";			
+		resultCode += "\n\treturn htmlTable;";
+		resultCode += "\n\t}";
+		resultCode += "\n})";
+		$('#results').html("<textarea id=\"resultsCode\" rows=\"20\">"+resultCode+"</textarea>");
+	});
+	//load the default site
+	$("#inputURL").trigger('change').val(location.href);
+});
+
+function getSiteLists(tURL){
+	$("#ListSlct").html("<option>Loading...</option>");
+	$().SPServices({
+		operation: "SiteDataGetListCollection",
+		webURL: tURL,
+		completefunc: function(xData, Status){
+			//renderList(xData, Status)
+			$("#ListSlct").html("<option>Select a site list...</option>");
+			$(xData.responseXML).find("_sList").each(function() {
+				$("#ListSlct").append("<option>" + $("Title",this).text() + "</option>");
+			});
+		}
+	});	
+}
+
+</script>
+<style>
+	.sSet {
+		min-width: 35em;
+		margin-bottom:1em;
+		border:	1px Gray solid;
+		padding: 0.2em;
+	}
+	.dimmed {
+		color:silver;
+	}	
+	#inputURL, #ListSlct {
+		min-width: 35em;
+	}
+	label {
+	    width: 5em;
+	    float: left;
+	    margin: 2px 4px 6px 4px;
+	    text-align: right;
+	    position:relative;
+	}
+	br { clear: left; }
+	#resultsCode {width: 100%;}
+
+</style>
+
+<title>SharePoint data viewer</title>
+</head>
+
+<body>
+	<h1>SharePoint data viewer</h1>
+	<form>
+		<div class="sSet">
+			<label>Input URL:</label><input id="inputURL" type="text" /><br />
+			<label>Site URL:</label><span id="siteURL" class="dimmed"></span><br />
+		</div>
+		<div class="sSet">
+			<label>List:</label><select id="ListSlct"></select>
+		</div>
+		List Items:
+		<div class="sSet" id="colSlct">
+			<span class="dimmed">Awaiting selection...</span>
+		</div>
+		<input type="button" id="getSatisfaction" value="Get results"/><br /><br />
+		Result code:
+		<div id="results">Nothing here yet...
+		</div>
+	</form>
+</body>
+
+</html>
