@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en" class="fuelux">
+<head>
+	<meta charset="utf-8">
+	<title>Computer Accessories</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	
+	<script type='text/javascript' src='/organization/IT/ClientTech/SiteAssets/scripts/jquery-1.8.3.min.js'></script>
+ 
+    
+      <script type='text/javascript' src="/organization/IT/ClientTech/SiteAssets/scripts/virgin/jquery.dataTables.min.js"></script>
+ 
+      <link rel="stylesheet" type="text/css" href="/organization/IT/ClientTech/SiteAssets/css/virgin/bootstrap.css">
+    
+      <script type='text/javascript' src="/organization/IT/ClientTech/SiteAssets/scripts/virgin/jquery.dataTables.js"></script>
+ 
+      <script type='text/javascript' src="/organization/IT/ClientTech/SiteAssets/scripts/virgin/paging.js"></script>
+	  
+	  <script type="text/javascript" src="/organization/IT/ClientTech/SiteAssets/scripts/jquery.SPServices-2013.01.min.js"></script>
+	  
+	
+	
+
+	
+
+
+<style type="text/css">
+@font-face {
+font-family: 'Raleway';
+
+src:
+  url('/organization/IT/ClientTech/SiteAssets/fonts/Raleway-Medium.otf');
+
+
+}
+
+.container {
+
+width:960px;
+
+}	
+		
+ div.dataTables_length label {
+	width: 360px;
+	float: left;
+	text-align: left;
+}
+
+div.dataTables_length select {
+	width: 75px;
+}
+
+div.dataTables_filter label {
+	float: right;
+	width: 460px;
+}
+
+div.dataTables_info {
+	padding-top: 8px;
+}
+
+div.dataTables_paginate {
+	float: right;
+	margin: 0;
+}
+
+table {
+	margin: 1em 0;
+	clear: both;
+}
+
+table.dataTable th:active {
+	outline: none;
+}
+
+h1 {
+
+		font-family: 'Raleway', sans-serif;
+        font-size: 20px;
+		font-weight: 400;
+		color: #37d066;	
+		
+
+}
+
+h3 {
+        font-family: 'Raleway', sans-serif;
+        font-size: 20px;
+		font-weight: 200;
+		color: #8E0B56;	
+		border-right: solid 1px #f2f2f2;
+      }
+	  
+
+
+		
+
+</style>
+
+
+
+<script type='text/javascript'>//<![CDATA[ 
+$(window).load(function(){
+	/* Default class modification */
+			$.extend( $.fn.dataTableExt.oStdClasses, {
+				"sSortAsc": "header headerSortDown",
+				"sSortDesc": "header headerSortUp",
+				"sSortable": "header"
+			} );
+
+			/* API method to get paging information */
+			$.fn.dataTableExt.oApi.fnPagingInfo = function ( oSettings )
+			{
+				return {
+					"iStart":         oSettings._iDisplayStart,
+					"iEnd":           oSettings.fnDisplayEnd(),
+					"iLength":        oSettings._iDisplayLength,
+					"iTotal":         oSettings.fnRecordsTotal(),
+					"iFilteredTotal": oSettings.fnRecordsDisplay(),
+					"iPage":          Math.ceil( oSettings._iDisplayStart / oSettings._iDisplayLength ),
+					"iTotalPages":    Math.ceil( oSettings.fnRecordsDisplay() / oSettings._iDisplayLength )
+				};
+			}
+
+			/* Bootstrap style pagination control */
+			$.extend( $.fn.dataTableExt.oPagination, {
+				"bootstrap": {
+					"fnInit": function( oSettings, nPaging, fnDraw ) {
+						var oLang = oSettings.oLanguage.oPaginate;
+						var fnClickHandler = function ( e ) {
+							if ( oSettings.oApi._fnPageChange(oSettings, e.data.action) ) {
+								fnDraw( oSettings );
+							}
+						};
+
+						$(nPaging).addClass('pagination').append(
+							'<ul>'+
+								'<li class="prev disabled"><a href="#">&larr; '+oLang.sPrevious+'</a></li>'+
+								'<li class="next disabled"><a href="#">'+oLang.sNext+' &rarr; </a></li>'+
+							'</ul>'
+						);
+						var els = $('a', nPaging);
+						$(els[0]).bind( 'click.DT', { action: "previous" }, fnClickHandler );
+						$(els[1]).bind( 'click.DT', { action: "next" }, fnClickHandler );
+					},
+
+					"fnUpdate": function ( oSettings, fnDraw ) {
+						var oPaging = oSettings.oInstance.fnPagingInfo();
+						var an = oSettings.aanFeatures.p;
+						var i, sClass, iStart, iEnd, iHalf=Math.floor(oPaging.iTotalPages/2);
+
+						if ( oPaging.iTotalPages < 5) {
+							iStart = 1;
+							iEnd = oPaging.iTotalPages;
+						}
+						else if ( oPaging.iPage <= iHalf ) {
+							iStart = 1;
+							iEnd = 5;
+						} else if ( oPaging.iPage >= (5-iHalf) ) {
+							iStart = oPaging.iTotalPages - 5 + 1;
+							iEnd = oPaging.iTotalPages;
+						} else {
+							iStart = oPaging.iPage - Math.ceil(5/2) + 1;
+							iEnd = iStart + 5 - 1;
+						}
+
+						for ( i=0, iLen=an.length ; i<iLen ; i++ ) {
+							// Remove the middle elements
+							$('li:gt(0)', an[i]).filter(':not(:last)').remove();
+
+							// Add the new list items and their event handlers
+							for ( i=iStart ; i<=iEnd ; i++ ) {
+								sClass = (i==oPaging.iPage+1) ? 'class="active"' : '';
+								$('<li '+sClass+'><a href="#">'+i+'</a></li>')
+									.insertBefore('li:last', an[i])
+									.bind('click', function () {
+										oSettings._iDisplayStart = (parseInt($('a', this).text(),10)-1) * oPaging.iLength;
+										fnDraw( oSettings );
+									} );
+							}
+
+							// Add / remove disabled classes from the static elements
+							if ( oPaging.iPage === 0 ) {
+								$('li:first', an[i]).addClass('disabled');
+							} else {
+								$('li:first', an[i]).removeClass('disabled');
+							}
+
+							if ( oPaging.iPage === oPaging.iTotalPages-1 ) {
+								$('li:last', an[i]).addClass('disabled');
+							} else {
+								$('li:last', an[i]).removeClass('disabled');
+							}
+						}
+
+					}
+				}
+			} );
+
+			/* Table initialisation */
+			$().ready(function() {
+				$('#example').dataTable( {
+					"sDom": "<'row'<'span8'l><'span8'f>r>t<'row'<'span8'i><'span8'p>>",
+					"sPaginationType": "bootstrap"
+				} );
+			} );
+});//]]>  
+
+</script>
+
+
+</head>
+
+<body>
+
+<div class="container">
+
+            
+<table class="dataTable" id="example">
+    <thead>
+        <tr>
+            <th><h1>Description</h1></th>
+            <th><h3>Cost</h3></th>
+        
+        </tr>
+    </thead>
+    <tbody>
+       
+            <div id="List"></div>
+    
+     
+    </tbody>
+</table>
+
+</div>
+
+
+</body>
+
+<script type="text/javascript">
+
+var data = '';
+$().SPServices({
+	operation: "GetListItems",
+	async: false,
+	listName: "Parts List",
+	webURL: "https://dolbyconnect.dolby.net/organization/IT/ClientTech",
+	CAMLViewFields: "<ViewFields>" +
+				"<FieldRef Name='Title' ></FieldRef>" +
+				"<FieldRef Name='COST_x0020_PER_x0020_ITEM' ></FieldRef>" +
+			"</ViewFields>",
+	completefunc: function (xData, Status) {
+		$(xData.responseXML).SPFilterNode('z:row').each(function() {
+			data += "<tr>" +
+				"<td>" + "<a href='https://dolby.service-now.com/com.glideapp.servicecatalog_cat_item_view.do?sysparm_id=5202f0420a0a3c0900f981622d5a35d4&sysparm_link_parent=77137efa4a36231701e4423506b8f27e' target='_blank'>" + $(this).attr("ows_Title") + "</a>" + "</td>" +
+				"<td>" + $(this).attr("ows_COST_x0020_PER_x0020_ITEM") + "</td>" +
+			"</tr>";
+			
+		})
+		
+		
+		$("#example tbody").append(data);
+		
+		
+	}
+	
+});
+
+</script>
+</html>
