@@ -245,7 +245,7 @@ $().SPServices({
 	operation: "GetListItems",
 	async: false,
 	listName: "Parts List",
-	webURL: "https://dolbyconnect.dolby.net/organization/IT/ClientTech",
+	webURL: "https://#",
 	CAMLViewFields: "<ViewFields>" +
 				"<FieldRef Name='Title' ></FieldRef>" +
 				"<FieldRef Name='COST_x0020_PER_x0020_ITEM' ></FieldRef>" +
@@ -253,7 +253,7 @@ $().SPServices({
 	completefunc: function (xData, Status) {
 		$(xData.responseXML).SPFilterNode('z:row').each(function() {
 			data += "<tr>" +
-				"<td>" + "<a href='https://dolby.service-now.com/com.glideapp.servicecatalog_cat_item_view.do?sysparm_id=5202f0420a0a3c0900f981622d5a35d4&sysparm_link_parent=77137efa4a36231701e4423506b8f27e' target='_blank'>" + $(this).attr("ows_Title") + "</a>" + "</td>" +
+				"<td>" + "<a href='#' target='_blank'>" + $(this).attr("ows_Title") + "</a>" + "</td>" +
 				"<td>" + $(this).attr("ows_COST_x0020_PER_x0020_ITEM") + "</td>" +
 			"</tr>";
 			
